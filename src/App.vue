@@ -1,15 +1,14 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <BillSplit msg="Bill Split"/>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import BillSplit from './components/BillSplit.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    BillSplit
   }
 }
 </script>
