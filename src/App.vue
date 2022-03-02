@@ -1,5 +1,5 @@
 <template>
-  <BillSplit msg="Bill Split"/>
+  <BillSplit />
 </template>
 
 <script>

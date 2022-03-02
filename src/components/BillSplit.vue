@@ -1,34 +1,49 @@
 <template>
+  <div>
+    <h1>Bill Split</h1>
+  </div>
   <div class="form">
-    <!-- <div>
-      <h1>{{ msg }}</h1>
-    </div> -->
     <div class="entry">
-      <div><span>Amount:</span></div>
-      <div><input v-model.number="bs.baseAmount" class="txtbox" /></div>
+      <div class="particular-container">
+        <div class="txt-label"><span>Your Amount:</span></div>
+        <div><input v-model.number="bs.baseAmount" min=0 oninput="validity.valid||(value='');" type="number" class="txtbox" step=".01" placeholder="" /></div>
+      </div>
     </div>
     <div class="entry">
-      <div><span>Gross Total:</span></div>
-      <div><input v-model.number="bs.grossTotal" class="txtbox" /></div>
+      <div class="particular-container">
+        <div class="txt-label"><span>Gross Total:</span></div>
+        <div><input v-model.number="bs.grossTotal" min=0 oninput="validity.valid||(value='');" type="number" class="txtbox" step=".01" /></div>
+      </div>
     </div>
     <div class="entry">
-      <div><span>Sales Tax:</span></div>
-      <div><input v-model.number="bs.salesTax" class="txtbox" /></div>
+      <div class="particular-container">
+        <div class="txt-label"><span>Sales Tax:</span></div>
+        <div><input v-model.number="bs.salesTax" min=0 oninput="validity.valid||(value='');" type="number" class="txtbox" step=".01" /></div>
+      </div>
     </div>
     <div class="entry">
-      <div><span>Service Tax:</span></div>
-      <div><input v-model.number="bs.serviceTax" class="txtbox" /></div>
+      <div class="particular-container">
+        <div class="txt-label"><span>Service Tax:</span></div>
+        <div><input v-model.number="bs.serviceTax" min=0 oninput="validity.valid||(value='');" type="number" class="txtbox" step=".01" /></div>
+      </div>
     </div>
 
     <div class="entry">
-      <div><span>Amount Payable:</span></div>
-      <div><span>{{ result.total || "0.00" }}</span></div>
+      <div class="txt-alert"><span>{{ errMsg.invalidValueErr || "" }}</span></div>
+      <div class="particular-container">
+        <div class="txt-label"><span>Amount Payable:</span></div>
+        <div><span style="font-weight: bold">{{ result.total || "0.00" }}</span></div>
+      </div>
     </div>
 
     <div>
-      <button @click="calculate">Calculate</button>
-      <button @click="clear">Clear</button>
+      <button class="button" @click="clear">Clear</button>
+      <button class="button" @click="calculate">Calculate</button>
     </div>
+  </div>
+
+  <div class="footer-txt">
+    <span><a href="mailto:ycteoh@outlook.com">YC Teoh</a> © {{ new Date().getFullYear() }}</span>
   </div>
 </template>
 
@@ -45,7 +60,14 @@ export default {
         serviceTax: 0,
         amountPayable: 0
       },
-      result: {}
+      result: {},
+      errMsg: {
+        baseAmountErr: "",
+        grossTotalErr: "",
+        salesTaxErr: "",
+        serviceTaxErr: "",
+        invalidValueErr: ""
+      }
     }
   },
 
@@ -77,22 +99,53 @@ export default {
       this.bs.grossTotal = 0;
       this.bs.salesTax = 0;
       this.bs.serviceTax = 0;
+      this.errMsg.baseAmountErr = "";
+      this.errMsg.salesTaxErr = "";
+      this.errMsg.serviceTaxErr = "";
+      this.errMsg.invalidValueErr = "";
     },
     
     calculate() {
+      let redFlag = 0;
+      const initTotal = 0;
+      this.result = {initTotal, amountPayable: initTotal};
+      this.errMsg.baseAmountErr = "";
+      this.errMsg.salesTaxErr = "";
+      this.errMsg.serviceTaxErr = "";
+      this.errMsg.invalidValueErr = "";
+
       const { baseAmountValid, grossTotalValid, salesTaxValid, serviceTaxValid } = this;
+
       if (!baseAmountValid || !grossTotalValid || !salesTaxValid || !serviceTaxValid) {
         return;
       }
 
-      const { baseAmount ,grossTotal, salesTax, serviceTax } = this.bs;
-      const singlePct = (baseAmount / grossTotal);
-      const paySalesTax = salesTax * singlePct;
-      const payServiceTax = serviceTax * singlePct;
-      const actualTotal = baseAmount + paySalesTax + payServiceTax;
-      const total = actualTotal.toFixed(2);
-      console.log(total);
-      this.result = {total, amountPayable: total};
+      const { baseAmount, grossTotal, salesTax, serviceTax } = this.bs;
+
+      if ((baseAmount < 0) || (grossTotal < 0) ||
+        (salesTax < 0) || (serviceTax < 0) ||
+        (baseAmount > grossTotal) || (salesTax > grossTotal) ||
+        (serviceTax > grossTotal)) {
+        this.errMsg.invalidValueErr = "Invalid value(s)!";
+        redFlag++;
+      }
+
+      if (redFlag === 0) {
+        let singlePct = 0;
+
+        if (baseAmount === 0 && grossTotal === 0 && salesTax === 0 && serviceTax === 0) {
+          singlePct = 0;
+        } else {
+          singlePct = (baseAmount / grossTotal);
+        }
+
+        const paySalesTax = salesTax * singlePct;
+        const payServiceTax = serviceTax * singlePct;
+        const actualTotal = baseAmount + paySalesTax + payServiceTax;
+        const total = actualTotal.toFixed(2);
+        console.log(total);
+        this.result = {total, amountPayable: total};
+      }
     }
   }
 }
@@ -100,17 +153,5 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-.form {
-  display: flex;
-  flex-direction: column;
-  margin: 0 auto;
-  background-color: beige;
-  width: 640px;
-}
-
-.entry {
-  display: flex;
-  justify-content: center;
-  flex-direction: row;
-}
+@import "./style.css";
 </style>
